@@ -33,33 +33,6 @@ def review_code(diff: str):
     review_result = portia.run(f"Review the following code for readability, function length, naming conventions, and possible improvements:\n{diff}")
     return review_result  # Return the entire review result (log)
 
-# Tkinter GUI Setup
-window = tk.Tk()
-window.geometry("600x600")
-
-# Create a label
-label = tk.Label(window, text="Enter your code or changes for review:")
-label.pack(pady=10)
-
-# Multi-line text box (Text widget) where the user can input the code/changes to review
-github_changes_box = tk.Text(window, height=10, width=60)
-github_changes_box.pack(pady=10)
-
-# Multi-line text box to load the Portia comments into it:
-portia_comments_box = tk.Text(window, height=5, width=60)
-portia_comments_box.pack(pady=20)
-portia_comments_box.config(state=tk.DISABLED)
-
-# Multi-line text box to load the GitHub changes (for context, if applicable)  
-accepted_feedback_box = tk.Text(window, height=5, width=60)
-accepted_feedback_box.pack(pady=20)
-accepted_feedback_box.config(state=tk.DISABLED)
-
-
-# Create a Frame to hold the buttons
-button_frame = tk.Frame(window)
-button_frame.pack(pady=10)
-
 # Accept and Reject buttons
 def accept_input():
     print("Reviewing changes...")
@@ -160,16 +133,42 @@ def review_changes():
         portia_comments_box.insert(tk.END, "No changes to review.\n")
         portia_comments_box.config(state=tk.DISABLED)
 
+# Tkinter GUI Setup
+window = tk.Tk()
+window.geometry("600x600")
+
+# Create a label
+label = tk.Label(window, text="Enter your code or changes for review:")
+label.pack(pady=10)
+
+# Multi-line text box (Text widget) where the user can input the code/changes to review
+github_changes_box = tk.Text(window, height=10, width=60)
+github_changes_box.pack(pady=10)
+
 # Create the buttons
 review_button = tk.Button(window, text="Review Changes", command=review_changes)
-review_button.pack(pady=10)
+review_button.pack(pady=10, fill=tk.X, padx=20, expand=True)
+
+# Multi-line text box to load the Portia comments into it:
+portia_comments_box = tk.Text(window, height=5, width=60)
+portia_comments_box.pack(pady=20)
+portia_comments_box.config(state=tk.DISABLED)
+
+# Multi-line text box to load the GitHub changes (for context, if applicable)  
+accepted_feedback_box = tk.Text(window, height=5, width=60)
+accepted_feedback_box.pack(pady=20)
+accepted_feedback_box.config(state=tk.DISABLED)
+
+# Create a Frame to hold the buttons
+button_frame = tk.Frame(window)
+button_frame.pack(pady=10, fill=tk.X)  # Fill horizontally for the frame
 
 # Accept and Reject buttons
 accept_button = tk.Button(button_frame, text="Accept Feedback", command=accept_input)
-accept_button.pack(side=tk.LEFT, padx=100)
+accept_button.pack(side=tk.LEFT, fill=tk.X, padx=20, expand=True)
 
 reject_button = tk.Button(button_frame, text="Reject Feedback", command=remove_line)
-reject_button.pack(side=tk.LEFT, padx=100)
+reject_button.pack(side=tk.LEFT, fill=tk.X, padx=20, expand=True)
 
 # Run the application 
 window.mainloop() 
