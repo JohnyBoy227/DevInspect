@@ -26,6 +26,30 @@ anthropic_config = Config.from_default(
 # Initialize Portia
 portia = Portia(config=anthropic_config, tools=example_tool_registry)
 
-# Run a simple prompt
-plan_run = portia.run('add 1 + 2')
-print(plan_run.model_dump_json(indent=2))
+# Sample code diff (could be fetched dynamically from a GitHub PR)
+pr_diff = '''
+function processPayment(user_id, amount) {
+    if (amount < 0) {
+        console.log("Amount cannot be negative");
+        return false;
+    }
+    let paymentProcessed = false;
+    if (amount > 1000) {
+        // Some complex logic
+        paymentProcessed = true;
+    }
+    // more code here
+    return paymentProcessed;
+}
+'''
+
+# Run Portia for code review
+def review_code(diff: str):
+    review_result = portia.run(f"Review the following code for readability, function length, naming conventions, and possible improvements:\n{diff}")
+    return review_result.model_dump_json(indent=2)
+
+# Get the review
+review_feedback = review_code(pr_diff)
+
+# Print the review
+print(review_feedback)
