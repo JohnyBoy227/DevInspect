@@ -1,19 +1,54 @@
 import requests
+import tkinter as tk
 
+# Placeholder for extract_pull_request_data
 def extract_pull_request_data(owner, repo, token):
+    pass  # This will be replaced with the actual implementation later
+
+# Function that uses extract_pull_request_data
+def check_pull_requests(url: str, token: str):
+    # Clear the results box
+    results_box.config(state=tk.NORMAL)
+    results_box.delete(1.0, tk.END)
+
+    # Extract owner and repo from the URL
+    try:
+        owner, repo = url.split("github.com/")[1].split("/")
+        results_box.insert(tk.END, f"Owner: {owner}, Repo: {repo}\n")
+    except IndexError:
+        results_box.insert(tk.END, "Invalid GitHub repository URL format.\n")
+        results_box.config(state=tk.DISABLED)
+        return
+
+    # Call the function to extract pull request data with error handling
+    try:
+        extract_pull_request_data(owner, repo, token)
+    except Exception as e:
+        results_box.insert(tk.END, f"An error occurred while fetching pull request data: {e}\n")
+    
+    results_box.config(state=tk.DISABLED)
+
+# Actual implementation of extract_pull_request_data
+def extract_pull_request_data(owner, repo, token):
+    # Clear the results box
+    results_box.config(state=tk.NORMAL)
+    results_box.delete(1.0, tk.END)
+
     # Get all pull requests for the repository
     pulls_url = f"https://api.github.com/repos/{owner}/{repo}/pulls"
     headers = {"Authorization": f"Bearer {token}"}
     response = requests.get(pulls_url, headers=headers)
 
     if response.status_code != 200:
-        print(f"Error: Unable to fetch pull requests. Status code: {response.status_code}")
+        results_box.insert(tk.END, f"Error: Unable to fetch pull requests. Status code: {response.status_code}\n")
+        results_box.config(state=tk.DISABLED)
         return
 
     pull_requests = response.json()
 
     if not pull_requests:
-        print("No open pull requests found.")
+        results_box.insert(tk.END, "No open pull requests found.\n")
+        results_box.config(state=tk.DISABLED)
         return
 
     for pr in pull_requests:
@@ -35,12 +70,13 @@ def extract_pull_request_data(owner, repo, token):
                 "avatar_url": pr["user"]["avatar_url"]
             }
         }
-        print(f"Pull Request #{pr['number']}")
-        print(f"Title: {pr_data['title']}")
-        print(f"Body: {pr_data['body']}")
-        print(f"Created At: {pr_data['time']['created_at']}")
-        print(f"User: {pr_data['user']['login']} ({pr_data['user']['url']})")
-        print("-" * 50)
+        # Insert pull request details into the results box
+        results_box.insert(tk.END, f"Pull Request #{pr['number']}\n")
+        results_box.insert(tk.END, f"Title: {pr_data['title']}\n")
+        results_box.insert(tk.END, f"Body: {pr_data['body']}\n")
+        results_box.insert(tk.END, f"Created At: {pr_data['time']['created_at']}\n")
+        results_box.insert(tk.END, f"User: {pr_data['user']['login']} ({pr_data['user']['url']})\n")
+        results_box.insert(tk.END, "-" * 50 + "\n")
 
         # Fetch the files changed in the PR
         files_response = requests.get(pr_data["changes"]["files_url"], headers=headers)
@@ -48,50 +84,61 @@ def extract_pull_request_data(owner, repo, token):
         if files_response.status_code == 200:
             changed_files = files_response.json()
             if not changed_files:
-                print("No files changed.")
+                results_box.insert(tk.END, "No files changed.\n")
             else:
-                print("Changed Files:")
+                results_box.insert(tk.END, "Changed Files:\n")
                 for file in changed_files:
-                    print(f"File: {file['filename']}")
-                    print(f"Status: {file['status']}")
-                    print(f"Additions: {file['additions']}")
-                    print(f"Deletions: {file['deletions']}")
-                    
-                    # Print before and after (diff)
+                    results_box.insert(tk.END, f"File: {file['filename']}\n")
+                    results_box.insert(tk.END, f"Status: {file['status']}\n")
+                    results_box.insert(tk.END, f"Additions: {file['additions']}\n")
+                    results_box.insert(tk.END, f"Deletions: {file['deletions']}\n")
                     if 'patch' in file:
-                        print("Changes:")
-                        print(file['patch'])  # This shows the diff (before and after)
+                        results_box.insert(tk.END, "Changes:\n")
+                        results_box.insert(tk.END, file['patch'] + "\n")
                     else:
-                        print("No diff available for this file.")
-                    print("-" * 50)
+                        results_box.insert(tk.END, "No diff available for this file.\n")
+                    results_box.insert(tk.END, "-" * 50 + "\n")
         else:
-            print(f"Error: Unable to fetch changed files. Status code: {files_response.status_code}")
-        
-        print("-" * 50)
+            results_box.insert(tk.END, f"Error: Unable to fetch changed files. Status code: {files_response.status_code}\n")
+        results_box.insert(tk.END, "-" * 50 + "\n")
 
-def main():
-    # Input the repository URL and personal token
-    repo_url = "https://github.com/JohnyBoy227/Pull_Analyser" #input("Enter the GitHub repository URL (e.g., https://github.com/owner/repo): ").strip()
-    print(f"Received repo URL: {repo_url}")
+    # Disable the results box after updating
+    results_box.config(state=tk.DISABLED)
 
-    # Extract owner and repo from URL
-    try:
-        owner, repo = repo_url.split("github.com/")[1].split("/")
-        print(f"Owner: {owner}, Repo: {repo}")
+# Tkinter GUI Setup
+window = tk.Tk()
+window.geometry("700x700")
 
-    except IndexError:
-        print("Invalid GitHub repository URL format.")
-        return
+# Create a label
+window.title("GitHub Pull Request Checker")
+window.configure(bg="#f0f0f0")
 
-    token = "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" #input("Enter your GitHub personal access token: ").strip()
+# GitHub URL Label and Entry
+url_label = tk.Label(window, text="GitHub URL (e.g., https://github.com/owner/repo):")
+url_label.pack(pady=5)
+url_entry = tk.Entry(window, width=70)
+url_entry.pack(pady=5)
 
-    try:
-        extract_pull_request_data(owner, repo, token)
-    except Exception as e:  # Catch any exception and provide more context
-        print(f"An error occurred: {e}")
-        if "401" in str(e):  # Example check for an invalid token (HTTP 401 Unauthorized)
-            print("Invalid token. Please check your GitHub token and try again.")
-    return
+# GitHub API Token Label and Entry
+token_label = tk.Label(window, text="GitHub API Token:")
+token_label.pack(pady=5)
+token_entry = tk.Entry(window, width=70, show="*")  # 'show="*"' hides the input for security
+token_entry.pack(pady=5)
 
-if __name__ == "__main__":
-    main()
+# Button to Check for Pull Requests
+check_button = tk.Button(window, text="Check for Pull Requests", command=lambda: check_pull_requests(url_entry.get(), token_entry.get()))
+check_button.pack(pady=10)
+
+# Multi-line text box to display the results
+results_box = tk.Text(window, height=10, width=70)
+results_box.pack(pady=10)
+results_box.config(state=tk.DISABLED)
+
+# Multi-line text box to load the Portia comments into it:
+portia_comments_box = tk.Text(window, height=5, width=70)
+portia_comments_box.pack(pady=20)
+portia_comments_box.config(state=tk.DISABLED)
+portia_comments_box.insert(tk.END, "Portia comments box")
+
+# Run the Tkinter event loop
+window.mainloop()
