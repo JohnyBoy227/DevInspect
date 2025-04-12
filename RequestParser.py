@@ -40,7 +40,6 @@ def extract_pull_request_data(owner, repo, token):
         print(f"Body: {pr_data['body']}")
         print(f"Created At: {pr_data['time']['created_at']}")
         print(f"User: {pr_data['user']['login']} ({pr_data['user']['url']})")
-        print(f"Changes: Commits - {pr_data['changes']['commits_url']}, Files - {pr_data['changes']['files_url']}")
         print("-" * 50)
 
         # Fetch the files changed in the PR
@@ -57,6 +56,13 @@ def extract_pull_request_data(owner, repo, token):
                     print(f"Status: {file['status']}")
                     print(f"Additions: {file['additions']}")
                     print(f"Deletions: {file['deletions']}")
+                    
+                    # Print before and after (diff)
+                    if 'patch' in file:
+                        print("Changes:")
+                        print(file['patch'])  # This shows the diff (before and after)
+                    else:
+                        print("No diff available for this file.")
                     print("-" * 50)
         else:
             print(f"Error: Unable to fetch changed files. Status code: {files_response.status_code}")
