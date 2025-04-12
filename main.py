@@ -88,7 +88,43 @@ def review_changes():
         # Display the entire output in the portia_comments_box
         portia_comments_box.config(state=tk.NORMAL)
         portia_comments_box.delete("1.0", tk.END)  # Clear previous feedback
-        portia_comments_box.insert(tk.END, review_feedback)  # Insert full output
+
+        #Before we put the review feedback into the program we need to filter it for the sectionb of json we want
+
+        #We need to find first all parts after final_output
+        
+        # Find the first occurrence of 'final_output'
+        index = review_feedback.find("final_output")
+        substring = ""
+
+        if index != -1: 
+            #Extract the part of the string after 'final_output'
+            review_feedback = review_feedback[index + len("final_output"):]
+
+        #find the occurance of sumary which we want
+        index = review_feedback.find("summary")
+        
+        if index != -1: 
+            #Extract the part of the string after 'final_output'
+            review_feedback = review_feedback[index + len("summary"):]
+
+
+        start = review_feedback.find('": ')
+        if start != -1:
+            # Move past '#": ' (which is 4 characters)
+            start += 4
+
+            end = (len(review_feedback) - 13)
+            #end = review_feedback.find('"', start)
+            value = review_feedback[start:end]
+
+        sentences = [s.strip() for s in value.split('.') if s.strip()]
+
+        for sentence in sentences:
+            portia_comments_box.insert(tk.END, sentence + '.\n')
+
+        
+        #portia_comments_box.insert(tk.END, review_feedback)  # Insert full output
         portia_comments_box.config(state=tk.DISABLED)
     else:
         portia_comments_box.config(state=tk.NORMAL)
@@ -107,6 +143,4 @@ reject_button = tk.Button(button_frame, text="Reject Feedback", command=remove_l
 reject_button.pack(side=tk.LEFT, padx=100)
 
 # Run the application 
-window.mainloop()
-
-## MAIN VERSION STICK TO
+window.mainloop() 
