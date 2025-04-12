@@ -56,7 +56,13 @@ def main():
         print("Invalid GitHub repository URL format.")
         return
 
-    extract_pull_request_data(owner, repo, token)
+    try:
+        extract_pull_request_data(owner, repo, token)
+    except Exception as e:  # Catch any exception and provide more context
+        print(f"An error occurred: {e}")
+        if "401" in str(e):  # Example check for an invalid token (HTTP 401 Unauthorized)
+            print("Invalid token. Please check your GitHub token and try again.")
+    return
 
 if __name__ == "__main__":
     main()
