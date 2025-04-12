@@ -1,11 +1,57 @@
 import requests
 import tkinter as tk
+import os
+from dotenv import load_dotenv
+from portia import (
+    Config,
+    LLMModel,
+    LLMProvider,
+    Portia,
+    example_tool_registry,
+)
+
+# Load .env variables
+load_dotenv()
+ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+
+# Validate key presence
+if not ANTHROPIC_API_KEY:
+    raise ValueError("Claude API key not found in .env!")
+
+# Set up config using Claude 3.5 Sonnet
+anthropic_config = Config.from_default(
+    llm_provider=LLMProvider.ANTHROPIC,
+    llm_model_name=LLMModel.CLAUDE_3_5_SONNET,
+    anthropic_api_key=ANTHROPIC_API_KEY
+)
+
+# Initialize Portia
+portia = Portia(config=anthropic_config, tools=example_tool_registry)
+
+# Function to run Portia for code review
+def review_code(diff: str):
+    # Run the code review using Portia and get the result
+    review_result = portia.run(f"Review the following code for readability, function length, naming conventions, and possible improvements. Provide a description of what the code does and if the merge should be accepted:\n{diff}")
+    
+    # Debug: Print the raw review result
+    print("Raw Portia output:", review_result)
+
+    # Extract the final output from the review result
+    try:
+        if hasattr(review_result, "final_output") and review_result.final_output:
+            return review_result.final_output
+        elif isinstance(review_result, str):
+            return review_result  # If the result is already a string
+        else:
+            return "No final output available from Portia."
+    except Exception as e:
+        return f"Error extracting final output: {e}"
 
 # Placeholder for extract_pull_request_data
 def extract_pull_request_data(owner, repo, token):
     pass  # This will be replaced with the actual implementation later
 
-# Function that uses extract_pull_request_data
+# Function to check pull requests and review the results
 def check_pull_requests(url: str, token: str):
     # Clear the results box
     results_box.config(state=tk.NORMAL)
@@ -23,9 +69,33 @@ def check_pull_requests(url: str, token: str):
     # Call the function to extract pull request data with error handling
     try:
         extract_pull_request_data(owner, repo, token)
+
+        # Get the content of the results box
+        results_content = results_box.get("1.0", tk.END).strip()
+        if results_content:
+            # Debug: Print the content being sent to Portia
+            print("Content sent to Portia:", results_content)
+
+            # Get the final output from Portia
+            review_feedback = review_code(results_content)
+
+            # Debug: Print the final output from Portia
+            print("Final Portia output:", review_feedback)
+
+            # Display the final output in the portia_comments_box
+            portia_comments_box.config(state=tk.NORMAL)
+            portia_comments_box.delete("1.0", tk.END)  # Clear previous feedback
+            portia_comments_box.insert(tk.END, review_feedback)  # Insert final output
+            portia_comments_box.config(state=tk.DISABLED)
+        else:
+            portia_comments_box.config(state=tk.NORMAL)
+            portia_comments_box.delete("1.0", tk.END)
+            portia_comments_box.insert(tk.END, "No content to review.\n")
+            portia_comments_box.config(state=tk.DISABLED)
+
     except Exception as e:
         results_box.insert(tk.END, f"An error occurred while fetching pull request data: {e}\n")
-    
+
     results_box.config(state=tk.DISABLED)
 
 # Actual implementation of extract_pull_request_data
