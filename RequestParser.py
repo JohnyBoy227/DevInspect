@@ -45,10 +45,6 @@ def extract_pull_request_data(owner, repo, token):
 
 def main():
     # Input the repository URL and personal token
-    input_ = input("Hi there: ")
-    print(input_)
-
-
     repo_url = input("Enter the GitHub repository URL (e.g., https://github.com/owner/repo): ").strip()
     print(f"Received repo URL: {repo_url}")
     token = input("Enter your GitHub personal access token: ").strip()
