@@ -42,8 +42,8 @@ label = tk.Label(window, text="Enter your code or changes for review:")
 label.pack(pady=10)
 
 # Multi-line text box (Text widget) where the user can input the code/changes to review
-entry = tk.Text(window, height=10, width=60)
-entry.pack(pady=10)
+github_changes_box = tk.Text(window, height=10, width=60)
+github_changes_box.pack(pady=10)
 
 # Multi-line text box to load the Portia comments into it:
 portia_comments_box = tk.Text(window, height=5, width=60)
@@ -51,10 +51,10 @@ portia_comments_box.pack(pady=20)
 portia_comments_box.config(state=tk.DISABLED)
 
 # Multi-line text box to load the GitHub changes (for context, if applicable)  
-github_changes_box = tk.Text(window, height=5, width=60)
-github_changes_box.pack(pady=20)
-github_changes_box.config(state=tk.DISABLED)
-github_changes_box.insert(tk.END, "This is the GitHub changes box")
+accepted_feedback_box = tk.Text(window, height=5, width=60)
+accepted_feedback_box.pack(pady=20)
+accepted_feedback_box.config(state=tk.DISABLED)
+
 
 # Create a Frame to hold the buttons
 button_frame = tk.Frame(window)
@@ -64,9 +64,36 @@ button_frame.pack(pady=10)
 def accept_input():
     print("Reviewing changes...")
     # Placeholder for actual acceptance logic, like saving the feedback or moving forward with changes
+    #portia_comments_box.config(state=tk.NORMAL)
+    #portia_comments_box.insert(tk.END, "\nChanges accepted.\n")
+    #portia_comments_box.config(state=tk.DISABLED)
+
+    #Now we need to store the line, put it into accepted feedback and 
+    #then remove it with the renove line function 
     portia_comments_box.config(state=tk.NORMAL)
-    portia_comments_box.insert(tk.END, "\nChanges accepted.\n")
-    portia_comments_box.config(state=tk.DISABLED)
+    content = portia_comments_box.get("1.0", tk.END)
+    
+    #Store it: 
+    stopIndex = content.find(".")
+    substring = content[:stopIndex + 1]
+    
+    accepted_feedback_box.config(state=tk.NORMAL)
+    
+    #Get current content
+    current_content = accepted_feedback_box.get("1.0", tk.END).strip()
+
+    #If it is empty/ not empty
+    if current_content:
+        accepted_feedback_box.insert(tk.END, "\n" + substring)
+    else:
+        accepted_feedback_box.insert(tk.END, substring)
+
+    #Disable the text box again
+    accepted_feedback_box.config(state=tk.DISABLED)
+
+    #Now we need to remove
+    remove_line()
+
 
 def remove_line():
     portia_comments_box.config(state=tk.NORMAL)
@@ -75,12 +102,14 @@ def remove_line():
     if stopIndex != -1:
         newContent = content[stopIndex + 1:].lstrip()
         portia_comments_box.delete("1.0", tk.END)
+        #Removes the line from the text and then replaces the text with 
+        #The text without the line 
         portia_comments_box.insert("1.0", newContent)
     portia_comments_box.config(state=tk.DISABLED)
 
 # Review changes callback
 def review_changes():
-    changes = entry.get("1.0", tk.END).strip()  # Get the changes entered in the multi-line text box
+    changes = github_changes_box.get("1.0", tk.END).strip()  # Get the changes entered in the multi-line text box
     if changes:
         # Get the full review including all output from Portia
         review_feedback = (review_code(changes)).model_dump_json(indent=2)
