@@ -1,0 +1,86 @@
+import tkinter as tk
+
+# What happens when the senior developer wants to see their changes:
+def show_input():
+    entered_text = entry.get()  # Get the text from the Entry widget
+
+    # Could see to check if they are one of our junior developers 
+    label.config(text=f"Getting the changes for: {entered_text}")
+
+# Create a button to let Portia AI & Claude review the changes 
+def review_changes():
+    # Placeholder for actual review function
+    print("Reviewing changes...")
+
+ #Need to add the input to the current feedback list 
+def accept_input():
+    print("Reviewing changes...")
+
+#Regardless of accepting or rejecting, need to remove the feedback from feedback box 
+def remove_line(): 
+    portia_comments_box.config(state=tk.NORMAL)
+
+    # Get the current content
+    content = text_box.get("1.0", tk.END)
+
+    # Find the first full stop
+    stopIndex = content.find(".")
+
+    if stopIndex != -1: 
+        #Remove the first sentence, including the first full stop  
+        newContent = content[stopIndex + 1 :].lstrip()
+        portia_comments_box.delete("1.0", tk.END) #Delete the content of the whole text box 
+        portia_comments_box("1.0", newContent) #Replaces the old comments which only comments that have not been revirewed 
+    else 
+        #End of the comments 
+        #Text window to ask whether they want to compile the comments and send them to a JD. 
+
+# Create the main window
+window = tk.Tk()
+# Set the window size
+window.geometry("600x600")
+
+# Create a label
+label = tk.Label(window, text="Enter something:")
+label.pack(pady=10)
+
+# Create a single-line text box (Entry widget)
+entry = tk.Entry(window)
+entry.pack(pady=10)
+
+# Multi-line text box so that the senior developer can enter what Portia should check for
+# Create a label
+label = tk.Label(window, text="What do you want to check for in the changes?")
+label.pack(pady=10)
+check_text_box = tk.Text(window, height=5, width=40)
+check_text_box.pack(pady=20)
+
+# Create the "Review Changes" button with the function hooked to it
+review_button = tk.Button(window, text="Review Changes", command=review_changes)
+review_button.pack(pady=10)
+
+# Multi-line text box to load the Portia comments into it: 
+portia_comments_box = tk.Text(window, height=5, width=60)
+portia_comments_box.pack(pady=20)
+portia_comments_box.config(state=tk.DISABLED)
+
+# Multi-line text box to load the GitHub changes  
+github_changes_box = tk.Text(window, height=5, width=60)
+github_changes_box.pack(pady=20)
+github_changes_box.config(state=tk.DISABLED)
+github_changes_box.insert(tk.END,"This is the GitHub changes box")
+
+# Create a Frame to hold the buttons
+button_frame = tk.Frame(window)
+button_frame.pack(pady=10)
+
+# Create the "Accept Feedback" button
+accept_button = tk.Button(button_frame, text="Accept Feedback", command=accept_input)
+accept_button.pack(side=tk.LEFT, padx=100) 
+
+# Create the "Reject Feedback" button
+reject_button = tk.Button(button_frame, text="Reject Feedback", command=remove_line)
+reject_button.pack(side=tk.LEFT, padx=100)
+
+# Run the application 
+window.mainloop()
