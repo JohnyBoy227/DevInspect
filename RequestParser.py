@@ -21,8 +21,8 @@ def extract_pull_request_data(owner, repo, token):
             "title": pr["title"],
             "body": pr["body"],
             "changes": {
-                "additions": pr_data.get("additions", 0),
-                "deletions": pr_data.get("deletions", 0),
+                "additions": pr.get("additions", 0),
+                "deletions": pr.get("deletions", 0),
                 "commits_url": pr["commits_url"],
                 "files_url": pr["url"] + "/files"
             },
@@ -47,14 +47,17 @@ def main():
     # Input the repository URL and personal token
     repo_url = input("Enter the GitHub repository URL (e.g., https://github.com/owner/repo): ").strip()
     print(f"Received repo URL: {repo_url}")
-    token = input("Enter your GitHub personal access token: ").strip()
 
     # Extract owner and repo from URL
     try:
         owner, repo = repo_url.split("github.com/")[1].split("/")
+        print(f"Owner: {owner}, Repo: {repo}")
+
     except IndexError:
         print("Invalid GitHub repository URL format.")
         return
+
+    token = input("Enter your GitHub personal access token: ").strip()
 
     try:
         extract_pull_request_data(owner, repo, token)
