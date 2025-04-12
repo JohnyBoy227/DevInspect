@@ -31,21 +31,24 @@ portia = Portia(config=anthropic_config, tools=example_tool_registry)
 # Function to run Portia for code review
 def review_code(diff: str):
     # Run the code review using Portia and get the result
-    review_result = portia.run(f"Review the following code for readability, function length, naming conventions, and possible improvements. Provide a description of what the code does and if the merge should be accepted:\n{diff}")
+    review_result = portia.run(f"Review the following code for readability, function length, naming conventions, and possible improvements. Provide a description of what the code does and if the merge should be accepted:\n{diff}").model_dump_json(indent=2)
     
     # Debug: Print the raw review result
     print("Raw Portia output:", review_result)
+    print("Type of review_result:", type(review_result))
 
-    # Extract the final output from the review result
-    try:
-        if hasattr(review_result, "final_output") and review_result.final_output:
-            return review_result.final_output
-        elif isinstance(review_result, str):
-            return review_result  # If the result is already a string
-        else:
-            return "No final output available from Portia."
-    except Exception as e:
-        return f"Error extracting final output: {e}"
+    # Convert the review result to a string if necessary
+    review_result = str(review_result)
+
+    # Find the first occurrence of 'final_output'
+    index = review_result.find("Final output:")
+    print("Index of 'Final output:':", index)
+    if index != -1:
+        # Extract the part of the string after 'final_output'
+        review_result = review_result[index + len("Final output:"):]
+
+        print("Extracted review result:", review_result)
+    return review_result.strip()  # Return the entire review result (log)
 
 # Placeholder for extract_pull_request_data
 def extract_pull_request_data(owner, repo, token):
