@@ -41,11 +41,22 @@ def review_code(diff: str):
     review_result = str(review_result)
 
     # Find the first occurrence of 'final_output'
-    index = review_result.find("Final output:")
-    print("Index of 'Final output:':", index)
-    if index != -1:
-        # Extract the part of the string after 'final_output'
-        review_result = review_result[index + len("Final output:"):]
+    index = review_result.find("final_output")
+    print("Index of 'final_output':", index)
+    if index != -1: 
+        review_result = review_result[index + len("final_output"):]
+
+    index = review_result.find("summary")
+        
+    print("Index of 'summary':", index)
+    if index != -1: 
+        review_result = review_result[index + len("summary"):]
+
+        start = review_result.find('": ')
+    if start != -1:
+        start += 4
+        end = len(review_result) - 13
+        value = review_result[start:end]
 
         print("Extracted review result:", review_result)
     return review_result.strip()  # Return the entire review result (log)
@@ -208,7 +219,7 @@ results_box.pack(pady=10)
 results_box.config(state=tk.DISABLED)
 
 # Multi-line text box to load the Portia comments into it:
-portia_comments_box = tk.Text(window, height=5, width=70)
+portia_comments_box = tk.Text(window, height=20, width=70)
 portia_comments_box.pack(pady=20)
 portia_comments_box.config(state=tk.DISABLED)
 portia_comments_box.insert(tk.END, "Portia comments box")
